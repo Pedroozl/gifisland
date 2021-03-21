@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css"
+  integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
+ <link rel="stylesheet" href="../../css/discord.css">
+ <link rel="stylesheet" href="../../css/style.css">
+ <style>
+   @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;700&display=swap');
+
+   body{
+    font-family: 'Open Sans',
+    sans-serif;
+   }
+
+   header{
+    font-family: 'Source Sans Pro';
+    font-style: normal;
+    font-weight: 300;
+    src: url(https://fonts.gstatic.com/s/sourcesanspro/v14/6xKydSBYKcSV-LCoeQqfX1RYOo3ik4zwlxdr.ttf) format('truetype');
+   }
+ </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">GIF ISLAND</a>
+      <ul>
+        <li><a href="/">Home</a></li>
+        <li><a href="/home/enviargif">Enviar GIF</a></li>
+        <div class="dropdown">
+          <a class="dropbtn">Categorias</a>
+          <div class="dropdown-content">
+            <a href="/home/categoria/0">Geral</a>
+            <a href="/home/categoria/1">Anime Feminino</a>
+            <a href="/home/categoria/2">Anime Masculino</a>
+            <a href="/home/categoria/3">Feminino</a>
+            <a href="/home/categoria/4">Masculino</a>
+            <a href="/home/categoria/5">Couple</a>
+            <a href="/home/categoria/5">Filmes</a>
+          </div>
+        </div>
+        <li><a href="/home/pedidos">Fazer um encomenda</a></li>
+        <li><a href="/home/post/pedidos">Pedidos</a></li>
+        <li><a href="/home/historico">Histórico</a></li>
+        <img style="max-height: 30px;max-width:35px;border-radius: 100px;position: relative;" src="https://cdn.discordapp.com/avatars/<%= user.discordId  %>/<%= user.avatar %>.png"><li><a class="active" href="/perfil"><%= user.username %></a></li>
+      </ul>
+  </header>
+ <section>
+  <div class="container">
+   <div class="profile">
+    <div class="pro-header">
+     <div class="pro-avatar">
+      <img src="../..<%= gif %>"
+       alt="avatar-username" >
+       <span class="pro-status">
+        <img src="https://emoji.gg/assets/emoji/8874_DND_Oxzy.png" style='max-width: 30px;max-height: 30px;'>
+       </span>
+     </div>
+     <div class="pro-username">
+      <span class="text-username"><%= user.username.trim().split('#').shift() %></span><span class="text-discrim">#<%= user.username.split("#").slice(1) %></span>
+     </div>
+    </div>
+    <div class="pro-body">
+     <div class="pro-content">
+      <div class="title-body">NENHUM CARGO</div>
+      <div class="roles-body">
+      </div>
+     </div>
+    </div>
+    <div class="pro-footer">
+     <div class="content-footer">
+      <div class="title-footer">NOTA</div>
+      <div class="subtitle-footer"><textarea placeholder="Clique para adicionar uma nota" rows="1"></textarea></div>
+      <div class="form-footer">
+       <input type="text" placeholder="Conversar com @<%= user.username.trim().split('#').shift() %>">
+      </div>
+      <div class="text-footer">
+       Right click on the user to see more options
+      </div>
+     </div>
+    </div>   
+   </div>
+  </div>
+ </section>
+</body>
+</html>

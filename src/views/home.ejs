@@ -1,0 +1,135 @@
+<link rel="stylesheet" href="./css/style.css">
+<link rel="stylesheet" href="./css/buttons.css">
+
+<body>
+  <menu id="ctxMenu">
+    <form id="form">
+      <button type="button" id="excluir_button" data-imagem="" onclick="excluir(this)" style="color: red;display: none;">Excluir</button>
+      <button type="button" id="ver_button" data-imagem="" onclick="ver(this)">Ver no perfil</button>
+    </form>
+  </menu>
+  <header>
+    <a href="/" class="logo">GIF ISLAND</a>
+      <ul>
+        <li><a href="/home/enviargif" class="active">Home</a></li>
+        <li><a href="/home/enviargif">Enviar GIF</a></li>
+        <div class="dropdown">
+          <a class="dropbtn">Categorias</a>
+          <div class="dropdown-content">
+            <a href="/home/categoria/0">Geral</a>
+            <a href="/home/categoria/1">Anime Feminino</a>
+            <a href="/home/categoria/2">Anime Masculino</a>
+            <a href="/home/categoria/3">Feminino</a>
+            <a href="/home/categoria/4">Masculino</a>
+            <a href="/home/categoria/5">Couple</a>
+            <a href="/home/categoria/5">Filmes</a>
+          </div>
+        </div>
+        <li><a href="/home/pedidos">Fazer um encomenda</a></li>
+        <li><a href="/home/post/pedidos">Pedidos</a></li>
+        <li><a href="/home/historico">Histórico</a></li>
+          <img style="max-height: 30px;max-width:35px;border-radius: 100px;position: relative;" src="https://cdn.discordapp.com/avatars/<%= user.discordId  %>/<%= user.avatar %>.png"><li><a href="/perfil"><%= user.username %></a></li>
+      </ul>
+  </header>
+    <div id="preloader" style="display: block;">
+		<div id="loader"></div>
+	  </div>
+    <br>
+    <div id="modal01" class="w3-modal" onclick="this.style.display='none'">
+      <img class="w3-modal-content" id="img01" style="width:100%">
+    </div>
+    <section id="photos" style="display: none;">
+      <% gifs.map(async gifs => { %>
+        <img id="gif" src=".<%= gifs.arquivo %>" data-imagem="<%= gifs.arquivo %>" data-titulo="<%= gifs.titulo %>" ondblclick="download('.<%= gifs.arquivo %>')">
+      <% }) %> 
+    </section>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js" integrity="sha512-3WaCYjK/lQuL0dVIRt1thLXr84Z/4Yppka6u40yEJT1QulYm9pCxguF6r8V84ndP5K03koI9hV1+zo/bUbgMtA==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      var socket = io('http://localhost:3000');
+      var zip = new JSZip();
+
+      $(window).on("load",function(){
+        $("#preloader").fadeOut("slow");
+        $("#preloader").css('display','none')
+        $("#photos").fadeIn('slow')
+        $('#notify').css('display','block')
+        document.querySelectorAll('#gif').forEach(async notepad => {
+        notepad.addEventListener("contextmenu",function(event){
+            event.preventDefault();
+            var ctxMenu = document.getElementById("ctxMenu");
+            ctxMenu.style.display = "block";
+            if('<%= user.mod %>' === 'true'){
+              $('#excluir_button').css('display','block')
+            }
+            $(ctxMenu).find('button').data('imagem',$(notepad).data('imagem'))
+            ctxMenu.style.left = (event.pageX - 10)+"px";
+            ctxMenu.style.top = (event.pageY - 10)+"px";
+        },false);
+        notepad.addEventListener("click",function(event){
+            var ctxMenu = document.getElementById("ctxMenu");
+            ctxMenu.style.display = "";
+            ctxMenu.style.left = "";
+            ctxMenu.style.top = "";
+        },false);
+      });
+    })
+
+    function ver(evt){
+      window.location.href = '/home/verperfil?gif='+$(evt).data('imagem')
+    }
+
+    function excluir(evt){
+      var data = {
+        gif: $(evt).data('imagem')
+      }
+      socket.emit('deletGif',data)
+    }
+
+    socket.on("deleteGifFront",async data => {
+      document.querySelectorAll('#gif').forEach(async gif => {
+        if(gif.dataset.imagem === data.arquivo){
+          $(gif).remove()
+        }
+      })
+    })
+
+      window.addEventListener('scroll',function(){
+        var header = document.querySelector('header')
+        header.classList.toggle('sticky',window.scrollY > 0)
+      })
+
+      function download(url) {
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.responseType = "blob";
+        request.onload = function() {
+          var response = this.response;
+          var filename = "." + response.type.split("/")[1];
+          zip.file(filename, response)
+          zip.file(filename)
+            .async("base64")
+            .then(function(content) {
+                console.log(content)
+                var element = document.createElement('a');
+                element.setAttribute('href', "data:" + response.type + ";base64," + content)
+                element.setAttribute('download', filename);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+              },
+              function(e) { 
+                  
+              });
+        }
+        request.send()
+      }
+    </script>
+</body>

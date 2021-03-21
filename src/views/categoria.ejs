@@ -1,0 +1,87 @@
+<link rel="stylesheet" href="../../css/style.css">
+
+<body>
+  <% let categoria2 = "" %> 
+  <% if(+categoria === 0)categoria2 = "Geral" %>
+  <% if(+categoria === 1)categoria2 = "Anime Feminino" %>
+  <% if(+categoria === 2)categoria2 = "Anime Masculino" %>
+  <% if(+categoria === 3)categoria2 = "Feminino" %>
+  <% if(+categoria === 4)categoria2 = "Masculino" %>
+  <% if(+categoria === 5)categoria2 = "Couple" %>
+  <header>
+    <a href="/" class="logo"> <%=categoria2%> </a>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/home/enviargif" >Enviar GIF</a></li>
+      <div class="dropdown">
+        <a class="dropbtn" class="active">Categorias</a>
+        <div class="dropdown-content">
+          <a href="/home/categoria/0">Geral</a>
+          <a href="/home/categoria/1">Anime Feminino</a>
+          <a href="/home/categoria/2">Anime Masculino</a>
+          <a href="/home/categoria/3">Feminino</a>
+          <a href="/home/categoria/4">Masculino</a>
+          <a href="/home/categoria/5">Couple</a>
+          <a href="/home/categoria/5">Filmes</a>
+        </div>
+      </div>
+      <li><a href="/home/pedidos">Fazer um encomenda</a></li>
+      <li><a href="/home/post/pedidos">Pedidos</a></li>
+      <li><a href="/home/historico">Histórico</a></li>
+      <img style="max-height: 30px;max-width:35px;border-radius: 100px;position: relative;" src="https://cdn.discordapp.com/avatars/<%= user.discordId  %>/<%= user.avatar %>.png"><li><a href="/perfil"><%= user.username %></a></li>
+    </ul>
+  </header>
+    <div id="preloader">
+		<div id="loader"></div>
+	  </div>
+    <br>
+    <section id="photos">
+      <% gifs.map(async gifs => { %>
+        <img src="../..<%= gifs.arquivo %>" ondblclick="download(this)">
+      <% }) %> 
+    </section>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip-utils/0.1.0/jszip-utils.min.js" integrity="sha512-3WaCYjK/lQuL0dVIRt1thLXr84Z/4Yppka6u40yEJT1QulYm9pCxguF6r8V84ndP5K03koI9hV1+zo/bUbgMtA==" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script>
+
+var zip = new JSZip();
+
+
+      $(window).on("load",function(){
+        $("#preloader").fadeOut("slow");
+        $("#photos").fadeIn('slow')
+      });
+
+      function download(url) {
+        var request = new XMLHttpRequest();
+        request.open("GET", url);
+        request.responseType = "blob";
+        request.onload = function() {
+          var response = this.response;
+          var filename = "<%= user.discordId %>." + response.type.split("/")[1];
+          zip.file(filename, response)
+          zip.file(filename)
+            .async("base64")
+            .then(function(content) {
+                console.log(content)
+                var element = document.createElement('a');
+                element.setAttribute('href', "data:" + response.type + ";base64," + content)
+                element.setAttribute('download', filename);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+              },
+              function(e) { 
+                  
+              });
+        }
+        request.send()
+      }
+    </script>
+</body>

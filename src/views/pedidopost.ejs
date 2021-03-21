@@ -1,0 +1,141 @@
+<link rel="stylesheet" href="../../css/style.css">
+<body>
+      <div class="wrapper">
+        <header>
+            <a href="/" class="logo">Pedidos</a>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/home/enviargif" >Enviar GIF</a></li>
+                <div class="dropdown">
+                  <a class="dropbtn">Categorias</a>
+                  <div class="dropdown-content">
+                    <a href="/home/categoria/0">Geral</a>
+                    <a href="/home/categoria/1">Anime Feminino</a>
+                    <a href="/home/categoria/2">Anime Masculino</a>
+                    <a href="/home/categoria/3">Feminino</a>
+                    <a href="/home/categoria/4">Masculino</a>
+                    <a href="/home/categoria/5">Couple</a>
+                    <a href="/home/categoria/5">Filmes</a>
+                  </div>
+                </div>
+                <li><a href="/home/pedidos">Fazer um encomenda</a></li>
+                <li><a href="/home/post/pedidos" class="active">Pedidos</a></li>
+                <li><a href="/home/historico">Histórico</a></li>
+                <img style="max-height: 30px;max-width:35px;border-radius: 100px;position: relative;" src="https://cdn.discordapp.com/avatars/<%= user.discordId  %>/<%= user.avatar %>.png"><li><a href="/perfil"><%= user.username %></a></li>
+              </ul>
+          </header>
+            <div class="container">
+                <section id="notify">
+                    <div class="alert alert-2-danger">
+                        <h3 class="alert-title"></h3>
+                        <p class="alert-content"></p>
+                    </div>
+                </section>
+              <div id="preloader">
+                <div id="loader"></div>
+                <div class="hud">
+                    <div class="barras">
+                        <div class="barra stamina" id="status-up">
+                            <div class="fill sta" id="vida" style="background: #ffffff"></div>   
+                        </div>
+                        <div id="return"></div>
+                    </div>
+                </div>
+              </div>
+                <% pedido.map(async p => { %> 
+                    <% if(p.respondido === true){ %> 
+                    <% }else{ %> 
+                    <details onclick=''>
+                        <summary>Pedido#<%= p.pedido %></summary>
+                        <h1>Descrição: <%= p.conteudo  %><br> Observação: <%= p.obs  %> <br> Usuario: <%= p.userId  %> </h1>
+                        <form id="form">
+                          <input type="file" name="gif" id="gif" multiple required>
+                          <input type="text" style="display: none;" name="pedido" id="pedido" value="<%= p.pedido %>"> 
+                          <button type="button" id="send_button" onclick="enviar('<%= p.pedido %>')">Enviar</button>
+                          <button type="button" id="negar_button" onclick="negar('<%= p.pedido %>')" style="color: red;">Negar</button>
+                        </form> 
+                      </details>
+                      <% } %> 
+                <% }) %> 
+        </div>
+    </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io('http://localhost:3000');
+
+
+        function enviar(pedido){
+            if(!$('#gif').val()) return
+            $('#preloader').css('background-color','rgba(0,0,0,0.5)')
+            $('#preloader').css('display','block')
+            $('#send_button').attr('disable',true)
+            uploadFile(pedido)
+        }
+
+        function negar(pedido){
+            $('#preloader').css('background-color','rgba(0,0,0,0.5)')
+            $('#preloader').css('display','block')
+            $('#negar_button').attr('disable',true)
+            negarSend(pedido)
+        }
+
+        function negarSend(pedido) {
+            var fd = new FormData();
+            fd.append("pedido", pedido);
+            fd.append('negado',true)
+            var xmlHTTP = new XMLHttpRequest();
+            xmlHTTP.upload.addEventListener("progress", progressFunction, false);
+            xmlHTTP.upload.addEventListener("load", transferCompleteFunction, false);
+            xmlHTTP.open("POST", '/api/post/enviargif');
+            xmlHTTP.send(fd);
+        }
+
+        function uploadFile(pedido) {
+            var archivoSeleccionado = document.getElementById("gif").files
+            var fd = new FormData();
+            Array.from(archivoSeleccionado).forEach(async gifs => {
+                console.log(gifs)
+                if(gifs.size >= 5000000){
+                    $('section').css('display','flex')
+                    $('.alert-title').html('O arquivo '+gifs.name+' tem '+formatSizeUnits(gifs.size)+' o tamanho maximo e de 5MB')
+                }else{
+                    fd.append('gif', gifs)
+                }
+            })
+            fd.append("pedido", $('#pedido').val());
+            fd.append('negado',false)
+            var xmlHTTP = new XMLHttpRequest();
+            xmlHTTP.upload.addEventListener("progress", progressFunction, false);
+            xmlHTTP.upload.addEventListener("load", transferCompleteFunction, false);
+            xmlHTTP.open("POST", '/api/post/enviargif');
+            xmlHTTP.send(fd);
+        }
+
+        function progressFunction(evt){
+            var progressBar = document.getElementById("vida");
+            var pct = Math.floor((evt.loaded * 100) / evt.total);
+            if (evt.lengthComputable) {
+                $(progressBar).css('width',pct + '%')
+            }
+        }
+
+        function transferCompleteFunction(evt){
+            var archivoSeleccionado = document.getElementById("gif").files
+            $('#vida').css('display','none')
+            $('#form').trigger('reset')
+            location.reload();
+        }
+
+        function formatSizeUnits(bytes){
+            if      (bytes >= 1073741824) { bytes = (bytes / 1073741824).toFixed(2) + " GB"; }
+            else if (bytes >= 1048576)    { bytes = (bytes / 1048576).toFixed(2) + " MB"; }
+            else if (bytes >= 1024)       { bytes = (bytes / 1024).toFixed(2) + " KB"; }
+            else if (bytes > 1)           { bytes = bytes + " bytes"; }
+            else if (bytes == 1)          { bytes = bytes + " byte"; }
+            else                          { bytes = "0 bytes"; }
+            return bytes;
+        }
+        
+    </script>
+</body>

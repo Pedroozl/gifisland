@@ -1,0 +1,2 @@
+const mongoose = require('mongoose');
+module.exports = mongoose.connect('mongodb+srv://admin:admin@cluster0-pfwka.mongodb.net/gifs?authSource=admin&replicaSet=Cluster0-shard-0&w=majority&readPreference=primary&appname=MongoD%20Compass%20Community&retryWrites=true&ssl=true', { useNewUrlParser: true, useUnifiedTopology: true });

@@ -1,0 +1,125 @@
+<link rel="stylesheet" href="../../css/style.css">
+<body>
+    <header>
+        <a href="/" class="logo">GIF ISLAND</a>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="#" class="active">Enviar GIF</a></li>
+            <div class="dropdown">
+              <a class="dropbtn">Categorias</a>
+              <div class="dropdown-content">
+                <a href="/home/categoria/0">Geral</a>
+                <a href="/home/categoria/1">Anime Feminino</a>
+                <a href="/home/categoria/2">Anime Masculino</a>
+                <a href="/home/categoria/3">Feminino</a>
+                <a href="/home/categoria/4">Masculino</a>
+                <a href="/home/categoria/5">Couple</a>
+                <a href="/home/categoria/5">Filmes</a>
+              </div>
+            </div>
+            <li><a href="/home/pedidos">Fazer um encomenda</a></li>
+            <li><a href="/home/post/pedidos">Pedidos</a></li>
+            <li><a href="/home/historico">Histórico</a></li>
+            <img style="max-height: 30px;max-width:35px;border-radius: 100px;position: relative;" src="https://cdn.discordapp.com/avatars/<%= user.discordId  %>/<%= user.avatar %>.png"><li><a href="/perfil"><%= user.username %></a></li>
+          </ul>
+      </header>
+        <div id="preloader">
+            <div id="loader"></div>
+            <div class="hud">
+                <div class="barras">
+                    <div class="barra stamina" id="status-up">
+                        <div class="fill sta" id="vida" style="background: #ffffff"></div>   
+                    </div>
+                    <div id="return"></div>
+                </div>
+            </div>
+          </div>
+            <div class="container">        
+            <h1>Enviar GIF</h1>
+            <h3 id="erro"></h3>
+            <form class="form" id="form" method="POST"  enctype="multipart/form-data">
+                <input type="text" placeholder="Titulo do GIF" name="titulo" id="titulo" required>
+                <select type="text" placeholder="Categoria" name="categoria" id="categoria" required>
+                    <option value="0">Geral</option>
+                    <option value="1">Anime Feminino</option>
+                    <option value="2">Anime Masculino</option>
+                    <option value="3">Feminino</option>
+                    <option value="4">Masculino</option>
+                    <option value="5">Couple</option>
+                    <option value="5">Filmes</option>
+                </select>
+                <input type="file" placeholder="GIF" id="gif" name="gif" multiple required>
+                <button type="button" id="send_button" onclick="enviar()">Enviar</button>
+            </form>
+        </div>
+    </div>
+    <section id="notify">
+        <div class="alert alert-2-danger">
+            <h3 class="alert-title"></h3>
+            <p class="alert-content"></p>
+        </div>
+    </section>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        var socket = io('http://localhost:3000');
+
+        function enviar(){
+            if(!$('#gif').val() || !$('#titulo').val() || !$('#categoria').val()) return
+            $('#preloader').css('background-color','rgba(0,0,0,0.5)')
+            $('#preloader').css('display','block')
+            $('#send_button').attr('disable',true)
+            uploadFile()
+        }
+
+        function uploadFile() {
+            var archivoSeleccionado = document.getElementById("gif").files  
+            var fd = new FormData();
+            Array.from(archivoSeleccionado).forEach(async gifs => {
+                if(gifs.size >= 5000000){
+                    $('section').css('display','flex')
+                    $('.alert-title').html('O arquivo '+gifs.name+' tem '+formatSizeUnits(gifs.size)+' o tamanho maximo e de 5MB')
+                }else{
+                    fd.append('gif', gifs)
+                }            
+            })
+            fd.append("titulo", $('#titulo').val());
+            fd.append("categoria", $('#categoria').val());
+            var xmlHTTP = new XMLHttpRequest();
+            xmlHTTP.upload.addEventListener("progress", progressFunction, false);
+            xmlHTTP.upload.addEventListener("load", transferCompleteFunction, false);
+            xmlHTTP.open("POST", '/api/enviargif');
+            xmlHTTP.send(fd);
+        }
+
+        function progressFunction(evt){
+            var progressBar = document.getElementById("vida");
+            var pct = Math.floor((evt.loaded * 100) / evt.total);
+            if (evt.lengthComputable) {
+                $(progressBar).css('width',pct + '%')
+            }
+        }
+
+        function transferCompleteFunction(evt){
+            var archivoSeleccionado = document.getElementById("gif").files
+            $('#vida').css('width','100%')
+            $('#preloader').css('display','none') 
+            var data = {
+                gif: archivoSeleccionado[0]
+            }          
+            socket.emit('gifEnviado')
+            $('#form').trigger('reset')
+        }
+
+        function formatSizeUnits(bytes){
+            if      (bytes >= 1073741824) { bytes = (bytes / 1073741824).toFixed(2) + " GB"; }
+            else if (bytes >= 1048576)    { bytes = (bytes / 1048576).toFixed(2) + " MB"; }
+            else if (bytes >= 1024)       { bytes = (bytes / 1024).toFixed(2) + " KB"; }
+            else if (bytes > 1)           { bytes = bytes + " bytes"; }
+            else if (bytes == 1)          { bytes = bytes + " byte"; }
+            else                          { bytes = "0 bytes"; }
+            return bytes;
+        }
+        
+    </script>
+</body>
